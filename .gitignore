@@ -1,0 +1,33 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environments
+.venv/
+venv/
+env/
+ENV/
+
+# Testing and coverage
+.coverage
+.pytest_cache/
+htmlcov/
+tests/fixtures/.pytest_cache/
+
+# Tooling caches
+.ruff_cache/
+.mypy_cache/
+
+# IDEs and Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS generated
+.DS_Store
+Thumbs.db
+
+# Project specific
+# (Do not ignore uv.lock to ensure reproducible environments)

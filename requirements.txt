@@ -1,0 +1,7 @@
+numpy
+scipy
+simpy
+streamlit
+paho-mqtt
+pandas
+rich
