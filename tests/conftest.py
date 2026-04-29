@@ -4,7 +4,8 @@ import logging
 
 import pytest
 
-from src.modules.plant import PlantHabitat, CropParameters, LETTUCE_PARAMS
+from src.modules.plant import PlantHabitat
+from src.modules.crops import LETTUCE
 
 
 @pytest.fixture
@@ -13,7 +14,7 @@ def lettuce_habitat() -> PlantHabitat:
     return PlantHabitat(
         crop_area_m2=20.0,
         light_par=1500.0,
-        crop_params=LETTUCE_PARAMS,
+        crop_params=LETTUCE,
     )
 
 
@@ -23,7 +24,7 @@ def dark_habitat() -> PlantHabitat:
     return PlantHabitat(
         crop_area_m2=20.0,
         light_par=0.0,
-        crop_params=LETTUCE_PARAMS,
+        crop_params=LETTUCE,
     )
 
 

@@ -10,7 +10,8 @@ from typing import Any
 from src.core.sensors import register_sensor, update_sensor_value
 from src.core.stability import StabilityMonitor
 from src.modules.buffer import BufferReservoir
-from src.modules.crew import CrewCompartment
+from src.modules.crew import ActivitySchedule, CrewCompartment
+from src.modules.crops import CropParameters, LETTUCE
 from src.modules.physio_chemical import PhysioChemicalModule
 from src.modules.plant import PlantHabitat
 
@@ -22,7 +23,14 @@ class Simulation:
     Orchestrates the Micro-BLSS simulation.
     """
 
-    def __init__(self) -> None:
+    def __init__(
+        self,
+        num_crew: int = 1,
+        crop_params: CropParameters = LETTUCE,
+        crop_area_m2: float = 20.0,
+        light_par: float = 1500.0,
+        use_crew_schedule: bool = True,
+    ) -> None:
         # ── Configure structured logging for the micro_blss hierarchy ──
         root_logger = logging.getLogger("micro_blss")
         if not root_logger.handlers:
@@ -35,12 +43,22 @@ class Simulation:
             )
             root_logger.addHandler(handler)
             root_logger.setLevel(logging.DEBUG)
-        # Initialize modules
-        self.crew = CrewCompartment(num_crew=1)
-        # 10m^2 of plants to support 1 crew member (approximate)
-        self.plant = PlantHabitat(crop_area_m2=20.0, light_par=1500.0)
+
+        # Initialize crew with activity scheduling
+        if use_crew_schedule:
+            schedules = [
+                ActivitySchedule(phase_offset_hours=i * (24.0 / num_crew))
+                for i in range(num_crew)
+            ]
+            self.crew = CrewCompartment(num_crew=num_crew, schedules=schedules)
+        else:
+            self.crew = CrewCompartment(num_crew=num_crew)
+
+        self.plant = PlantHabitat(
+            crop_area_m2=crop_area_m2, light_par=light_par, crop_params=crop_params
+        )
         self.eclss = PhysioChemicalModule()
-        self.buffer = BufferReservoir(volume_m3=30.0)  # 30m3 cabin
+        self.buffer = BufferReservoir(volume_m3=30.0)
         self.stability_monitor = StabilityMonitor()
 
         # Register sensors

@@ -9,11 +9,12 @@ Welcome to the Micro-BLSS (Bioregenerative Life Support System) Simulator projec
 It is also a translation and modernization of the MATLAB-based [V-HAB project](https://github.com/V-HAB/V-HAB). 
 
 **Core Architectural Modules (`src/`):**
-- **`modules/crew.py`**: Simulates human metabolic cycles ($O_2$ consumption, $CO_2$ and $H_2O$ production).
-- **`modules/plant.py`**: Uses the Modified Energy Cascade (MEC) model for photosynthesis and transpiration, utilizing `scipy.integrate.solve_ivp` for stiff ODE solving.
+- **`modules/crops/`**: Multi-crop parameter library (9 MELiSSA crops) with V-HAB 5×5 polynomial CQY/T_A coefficient matrices.
+- **`modules/crew.py`**: Simulates human metabolic cycles ($O_2$ consumption, $CO_2$ and $H_2O$ production) with per-crew `ActivitySchedule` and phase-offset support.
+- **`modules/plant.py`**: Uses the Modified Energy Cascade (MEC) model for photosynthesis and transpiration, utilizing `scipy.integrate.solve_ivp` for stiff ODE solving. Implements V-HAB polynomial CQY, age-dependent CUE_24, and photoperiod light/dark cycling.
 - **`modules/physio_chemical.py`**: PID controllers and threshold-based mechanical scrubbers (e.g., CDRA, Dehumidifiers).
 - **`modules/buffer.py`**: Mass-to-concentration state tracking via the Ideal Gas Law.
-- **`core/simulation.py` & `core/stability.py`**: Orchestrates integration steps, tracks Closure Index ($C_i$), and detects oscillations via Perturbation Engine.
+- **`core/simulation.py` & `core/stability.py`**: Orchestrates integration steps, tracks Closure Index ($C_i$), detects oscillations via FFT analysis on $C_i$ history, and classifies O₂/CO₂ phase-plane trajectories.
 - **`utils/validation.py`**: The crucial Verification & Validation (V&V) layer for stoichiometric mass conservation and Respiratory Quotient (RQ) bounds.
 
 ## 2. Environment & Tooling
@@ -47,6 +48,8 @@ Strict parity with the original V-HAB MATLAB model is required. Mathematical sta
 - **Run Tests**: `uv run pytest tests/ -v`
 - **Coverage**: Must remain >80%. Check with `uv run pytest tests/ --cov=src`
 - **Test-Driven Changes**: For any bug fix in the MEC calculations or mass balances, write a failing parity test *first* before adjusting the mathematical logic.
+- **CHANGELOG Discipline**: After every implementation (feature, fix, or refactor), update `CHANGELOG.md` following [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/) under the `[Unreleased]` section. Group entries under `Added`, `Changed`, `Fixed`, `Removed`, or `Deprecated`. Bump the version in `pyproject.toml` when cutting a release. **No PR should be merged without a corresponding CHANGELOG entry.**
+- **Documentation Sync**: After all code changes are complete, check whether `README.md` and `ROADMAP.md` need updating. If architecture, modules, usage, or milestone status changed, update them accordingly. These two files must always reflect the current state of the project.
 
 ## 5. Execution Commands
 
