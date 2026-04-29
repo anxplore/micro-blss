@@ -37,7 +37,7 @@ jobs:
         run: uv run pytest tests/ -v --tb=short --log-cli-level=WARNING
 
       - name: Run test suite with coverage
-        run: uv run pytest tests/ --cov=src --cov-report=term-missing --cov-report=xml
+        run: uv run pytest tests/ --cov=src --cov-report=term-missing --cov-report=xml --cov-fail-under=80
 
       - name: Upload coverage artifact
         if: matrix.python-version == '3.12'
@@ -66,12 +66,32 @@ jobs:
       - name: Install dependencies
         run: uv sync --dev
 
-      - name: Check import sorting
-        run: uv run python -c "import ast; import sys; [ast.parse(open(f).read()) for f in sys.argv[1:]]" src/utils/validation.py src/modules/plant.py
-        continue-on-error: true
+      - name: Ruff lint check
+        run: uv run ruff check src/ tests/
+
+      - name: Verify all source files parse
+        run: |
+          uv run python -c "
+          import ast, pathlib, sys
+          errors = []
+          for p in pathlib.Path('src').rglob('*.py'):
+              try:
+                  ast.parse(p.read_text())
+              except SyntaxError as e:
+                  errors.append(f'{p}: {e}')
+          for p in pathlib.Path('tests').rglob('*.py'):
+              try:
+                  ast.parse(p.read_text())
+              except SyntaxError as e:
+                  errors.append(f'{p}: {e}')
+          if errors:
+              print('\n'.join(errors))
+              sys.exit(1)
+          print(f'All source files parse OK')
+          "
 
   smoke:
-    name: "Smoke Test — 48h Simulation"
+    name: "Smoke Test — Multi-Crop & Scheduling"
     runs-on: ubuntu-latest
     needs: test
 
@@ -90,7 +110,7 @@ jobs:
       - name: Install dependencies
         run: uv sync
 
-      - name: Run 48h simulation smoke test
+      - name: "Smoke: 48h Lettuce simulation (default)"
         run: |
           uv run python -c "
           import logging
@@ -101,5 +121,33 @@ jobs:
           state = sim.buffer.get_state()
           assert state['o2_percent'] > 19.0, f'O2 too low: {state[\"o2_percent\"]:.2f}%'
           assert state['co2_ppm'] < 10000, f'CO2 too high: {state[\"co2_ppm\"]:.0f} ppm'
-          print(f'PASS — O2: {state[\"o2_percent\"]:.2f}%, CO2: {state[\"co2_ppm\"]:.0f} ppm')
+          print(f'PASS — Lettuce O2: {state[\"o2_percent\"]:.2f}%, CO2: {state[\"co2_ppm\"]:.0f} ppm')
+          "
+
+      - name: "Smoke: Multi-crop (Wheat + Soybean)"
+        run: |
+          uv run python -c "
+          import logging
+          logging.basicConfig(level=logging.WARNING)
+          from src.core import Simulation
+          from src.modules.crops import WHEAT, SOYBEAN
+          for name, crop in [('Wheat', WHEAT), ('Soybean', SOYBEAN)]:
+              sim = Simulation(crop_params=crop, crop_area_m2=20.0, light_par=1000.0)
+              sim.run(24, 0.5)
+              state = sim.buffer.get_state()
+              assert state['o2_percent'] > 0, f'{name}: O2 dropped to zero'
+              print(f'PASS — {name} O2: {state[\"o2_percent\"]:.2f}%, CO2: {state[\"co2_ppm\"]:.0f} ppm')
+          "
+
+      - name: "Smoke: Crew scheduling (2 crew, staggered)"
+        run: |
+          uv run python -c "
+          import logging
+          logging.basicConfig(level=logging.WARNING)
+          from src.core import Simulation
+          sim = Simulation(num_crew=2, use_crew_schedule=True)
+          sim.run(24, 0.5)
+          state = sim.buffer.get_state()
+          assert state['o2_percent'] > 0, f'O2 dropped to zero'
+          print(f'PASS — 2-crew scheduled O2: {state[\"o2_percent\"]:.2f}%, CO2: {state[\"co2_ppm\"]:.0f} ppm')
           "

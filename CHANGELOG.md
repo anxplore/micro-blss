@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-04-29
+
+### Added
+
+- **V-HAB 5×5 Polynomial CQY/T_A Matrices** — Replaced simplified Michaelis-Menten CQY approximation with empirical 5×5 coefficient matrices extracted directly from V-HAB MATLAB source, computing CQY_Max and canopy closure time (T_A) as bivariate polynomials of CO₂ and PPFD.
+- **Age-Dependent CUE_24** — Implemented senescence-aware Carbon Use Efficiency with linear decay between T_Q (onset of senescence) and T_M (maturity) for both legumes (dual CUE_Min/Max) and non-legumes (constant CUE).
+- **Multi-Crop Parameter Library** (`src/modules/crops/`) — 9 MELiSSA-reference crops with complete V-HAB parameters:
+  - Lettuce, Wheat, Soybean, Rice, Tomato, White Potato, Sweet Potato, Dry Bean, Peanut.
+  - Each includes CQY and T_A coefficient matrices, canopy parameters, timing, and growth factors.
+  - `CROP_REGISTRY` dictionary and `get_crop()` lookup function.
+- **Crew Activity Scheduling** (`ActivitySchedule` dataclass) — Configurable daily cycle (sleep/nominal/active) with per-crew-member phase offsets for staggered multi-crew scenarios.
+- **FFT-Based Oscillation Detection** — Windowed FFT analysis on Closure Index (Cᵢ) history to detect periodic instabilities, returning dominant period and energy concentration metrics.
+- **Phase-Plane Trajectory Analysis** — O₂/CO₂ phase-plane analysis classifying trajectories as converging, diverging, limit_cycle, or stable using normalized radius trend fitting.
+- **Photoperiod-Aware Light/Dark Cycling** — Plant module now automatically cycles between light and dark phases based on crop-specific photoperiod, applying respiration-only rates during dark phase.
+- **Biomass Growth Hard Capping** — Growth rate physically clamped at 20% of current biomass per step to prevent numerical runaway.
+- **v0.2.0 Feature Test Suite** (`tests/test_v020_features.py`) — 26 new tests covering:
+  - 9-crop registry validation and parametrized rate checks.
+  - Crew schedule cycling, phase offsets, and backward compatibility.
+  - FFT oscillation detection (synthetic sinusoidal vs stable signals).
+  - Phase-plane trajectory classification.
+  - Full integration tests with crew scheduling and multi-crop selection.
+
+### Changed
+
+- **Plant Module** (`src/modules/plant.py`) — Complete rewrite using `CropParameters` from the new crops module; polynomial matrix evaluation replaces analytical approximations.
+- **Simulation Constructor** — Now accepts `num_crew`, `crop_params`, `crop_area_m2`, `light_par`, and `use_crew_schedule` parameters for full configurability.
+- **Golden Reference Data** — Regenerated `vhab_reference_data.csv` with 40 test vectors (up from 21) including edge cases for dark phase, extreme CO₂/PPFD, and early DAP.
+- **Test Count** — Total tests expanded from 84 to 207 (all passing).
+
 ## [0.1.0] - 2026-04-29
 
 ### Added

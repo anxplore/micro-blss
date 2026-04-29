@@ -21,8 +21,9 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from src.modules.plant import PlantHabitat, LETTUCE_PARAMS
-from src.utils.validation import PhysicalValidator, ValidationResult
+from src.modules.plant import PlantHabitat
+from src.modules.crops import LETTUCE
+from src.utils.validation import PhysicalValidator
 
 # ---------------------------------------------------------------------------
 # Fixture path
@@ -65,7 +66,7 @@ class TestVHABParity:
         plant = PlantHabitat(
             crop_area_m2=ref_row["crop_area_m2"],
             light_par=ref_row["PPFD"],
-            crop_params=LETTUCE_PARAMS,
+            crop_params=LETTUCE,
         )
         return plant.calculate_mec_rates(
             current_co2_ppm=ref_row["CO2_ppm"],

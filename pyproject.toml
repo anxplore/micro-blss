@@ -1,6 +1,6 @@
 [project]
 name = "micro-blss"
-version = "0.1.0"
+version = "0.2.0"
 description = "Micro-BLSS (Bioregenerative Life Support System) Simulator — NASA MEC plant growth model ported from V-HAB"
 license = "MIT"
 readme = "README.md"
@@ -29,10 +29,11 @@ omit = ["src/*/__init__.py"]
 
 [tool.coverage.report]
 show_missing = true
-fail_under = 60
+fail_under = 80
 
 [dependency-groups]
 dev = [
     "pytest>=9.0.3",
     "pytest-cov>=7.1.0",
+    "ruff>=0.9.0",
 ]
