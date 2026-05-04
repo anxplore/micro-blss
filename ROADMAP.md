@@ -1,6 +1,6 @@
 # Micro-BLSS Development Roadmap
 
-> **Current Version**: 0.2.0 · **License**: MIT · **Last Updated**: 2026-04-29
+> **Current Version**: 0.2.1 · **License**: MIT · **Last Updated**: 2026-05-04
 
 This roadmap outlines the development plan for Micro-BLSS, organized by priority order. Each milestone builds upon the previous one to systematically evolve the project from a functional simulation MVP to a hardware-integrated, AI-driven closed-loop life support digital twin.
 
@@ -19,6 +19,11 @@ This roadmap outlines the development plan for Micro-BLSS, organized by priority
   1D ✅│   Oscillation detection (FFT) + Phase-plane analysis
        │
   v0.2.0 ✅   Mathematical Fidelity Release (207 tests)
+       │
+  1E ✅│   NASA JPL "Power of Ten" safety-critical refactoring
+  1F ✅│   Property-based testing (Hypothesis) + Robustness suite
+       │
+  v0.2.1 ✅   Safety & Robustness Release (221 tests, 91.5% coverage)
        │
   ─────┼──────────────── Phase 2: Hardware-In-The-Loop ─────────────────
        │
@@ -88,6 +93,21 @@ This roadmap outlines the development plan for Micro-BLSS, organized by priority
 - [x] Dominant period and energy concentration metrics
 - [x] `get_phase_plane_data()` for dashboard plotting
 - [x] Tests for synthetic oscillatory and stable signals
+
+---
+
+## Phase 1.5 — Safety & Robustness (v0.2.1) ✅
+
+**Status**: ✅ Complete.
+
+**What was implemented**:
+- [x] **NASA JPL "Power of Ten" Compliance**:
+    - Refactored all modules to use immutable `NamedTuple` state objects (Rule 3).
+    - Achieved high assertion density for physical invariants (Rule 5).
+    - Implemented loop safety bounds and memory history limits (Rule 2).
+- [x] **Property-Based Testing**: Integrated `Hypothesis` for `BufferReservoir` verification.
+- [x] **Boundary Safety**: Replaced assertions with `ValueError` for external boundary checks to ensure production persistence.
+- [x] **Coverage Boost**: Reached 91.5% total test coverage.
 
 ---
 

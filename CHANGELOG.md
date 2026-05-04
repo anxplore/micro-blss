@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-05-04
+
+### Added
+- **Safety & QA Hardening** — Integrated `scipy-stubs`, CI hardening, and locked in a 90% coverage threshold.
+- **NASA JPL "Power of Ten" Compliance** — Refactored core modules for static allocation (Rule 3), high assertion density (Rule 5), and bounded loops (Rule 2).
+- **Property-Based Testing** — Integrated `Hypothesis` and a dedicated Robustness suite to verify physical invariants and failure injection modes.
+- **Centralized Constants** — Established `src/utils/constants.py` as the single source of truth for all stoichiometric data.
+
+### Changed
+- **Physiological Modeling Refinement** — Improved documentation accuracy for **Apparent RQ (ARQ)**, **Crew Water Breakdown** (sweat vs. respiration), and established a **Physiological Glossary** for V-HAB variables.
+- **Metabolic Reporting Structure** — Split plant reporting into instantaneous **Rates** and integrated **Totals** for better telemetry clarity.
+- **Code Audit & Cleanup** — Replaced boundary `assert` with explicit `ValueError` and surgically cleaned up redundant NASA Rule comments to improve code signal-to-noise ratio.
+- **Modular Logic** — Decomposed `calculate_mec_rates` and updated `StabilityMonitor` for better maintainability.
+
+### Fixed
+- **Buffer & Crew Stability** — Fixed edge-case regressions in buffer mass clamping and standardized crew initialization consistency.
+- **Architectural Compliance** — Resolved PEP 8 (E402) import ordering, ODE solver type safety, and naming inconsistencies in metabolic data.
+- **Test & QA Cleanup** — Fixed broken smoke tests, restored missing docstrings, and synchronized development dependencies.
+
+
 ## [0.2.0] - 2026-04-29
 
 ### Added
@@ -91,3 +111,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - 48h simulation smoke test.
 - **Project Tooling** — `pyproject.toml` with `uv` lockfile, `pytest` configuration, and coverage settings.
 - **Documentation** — Comprehensive `README.md` covering architecture, installation, usage, and V&V instructions; `AGENTS.md` with agent-focused coding standards.
+
+[Unreleased]: https://github.com/anxplore/micro-blss/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/anxplore/micro-blss/compare/v0.2.0...v0.2.1
+[0.2.0]: https://github.com/anxplore/micro-blss/compare/v0.1.0...v0.2.0
+[0.1.0]: https://github.com/anxplore/micro-blss/releases/tag/v0.1.0

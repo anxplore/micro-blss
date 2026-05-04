@@ -61,16 +61,25 @@ class TestVHABParity:
 
     ATOL = 1e-6  # Absolute tolerance for np.isclose
 
-    def _compute_rates(self, ref_row: dict[str, float]) -> tuple[float, float, float, float]:
+    def _compute_rates(
+        self, ref_row: dict[str, float]
+    ) -> tuple[float, float, float, float]:
         """Compute MEC rates for a given reference row."""
         plant = PlantHabitat(
             crop_area_m2=ref_row["crop_area_m2"],
             light_par=ref_row["PPFD"],
             crop_params=LETTUCE,
         )
-        return plant.calculate_mec_rates(
+        delta = plant.calculate_mec_rates(
             current_co2_ppm=ref_row["CO2_ppm"],
             dap=ref_row["DAP_hours"],
+        )
+        # Return net rates for parity with reference data
+        return (
+            delta.o2_produced_kg_hr - delta.o2_consumed_kg_hr,
+            delta.co2_consumed_kg_hr - delta.co2_produced_kg_hr,
+            delta.water_produced_kg_hr,
+            delta.biomass_produced_kg_hr,
         )
 
     def test_o2_rate_parity(self, ref_row: dict[str, float]) -> None:
@@ -120,8 +129,8 @@ class TestPhysicalConstraints:
         """Nominal photosynthesis should pass mass conservation check."""
         # Ideal: 6 CO₂ → 6 O₂ (molar ratio = 1.0)
         # At MW_CO2=44e-3, MW_O2=32e-3:  1 kg CO₂ ≈ 0.727 kg O₂
-        co2 = 1.0   # kg/hr consumed
-        o2 = 0.727   # kg/hr produced (molar-equivalent)
+        co2 = 1.0  # kg/hr consumed
+        o2 = 0.727  # kg/hr produced (molar-equivalent)
         result = PhysicalValidator.check_mass_conservation(co2, o2, 0.3)
         assert result.is_valid
         assert len(result.errors) == 0
@@ -130,7 +139,7 @@ class TestPhysicalConstraints:
         """RQ ≈ 1.0 for typical carbohydrate metabolism."""
         rq, within_bounds = PhysicalValidator.check_respiratory_quotient(
             delta_co2_kg=0.044,  # 1 mmol CO₂
-            delta_o2_kg=0.032,   # 1 mmol O₂
+            delta_o2_kg=0.032,  # 1 mmol O₂
         )
         assert within_bounds
         assert 0.95 < rq < 1.05
@@ -206,16 +215,19 @@ class TestSimulationIntegration:
         sim.run(total_hours=48.0, dt_hours=0.5)
 
         state = sim.buffer.get_state()
-        assert state["o2_percent"] > 0, "O₂ dropped to zero"
-        assert state["co2_ppm"] >= 0, "CO₂ went negative"
+        assert state.o2_percent > 0, "O₂ dropped to zero"
+        assert state.co2_ppm >= 0, "CO₂ went negative"
 
     def test_dark_phase_produces_no_o2(self, dark_habitat: PlantHabitat) -> None:
         """Plants in darkness should not produce net O₂."""
-        o2_rate, co2_rate, _, biomass_rate = dark_habitat.calculate_mec_rates(
+        delta = dark_habitat.calculate_mec_rates(
             current_co2_ppm=1200.0, dap=120.0
         )
-        assert o2_rate <= 0.0, f"Expected zero or negative O₂ in dark, got {o2_rate}"
-        assert biomass_rate == 0.0, f"Expected zero biomass growth in dark, got {biomass_rate}"
+        o2_net = delta.o2_produced_kg_hr - delta.o2_consumed_kg_hr
+        assert o2_net <= 0.0, f"Expected zero or negative net O₂ in dark, got {o2_net}"
+        assert (
+            delta.biomass_produced_kg_hr == 0.0
+        ), f"Expected zero biomass growth in dark, got {delta.biomass_produced_kg_hr}"
 
     def test_cascading_failure_triggers_instability_warning(
         self, caplog: pytest.LogCaptureFixture
@@ -232,4 +244,4 @@ class TestSimulationIntegration:
         # After failure, CQY should be very low → instability warning may fire
         # depending on parameters. We check the simulation didn't crash.
         state = sim.buffer.get_state()
-        assert state["o2_percent"] > 0
+        assert state.o2_percent > 0

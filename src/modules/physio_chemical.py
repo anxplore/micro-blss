@@ -33,7 +33,7 @@ class PhysioChemicalModule:
         self.max_water_removal_rate: float = 0.5
 
         # PID Controller for dehumidifier
-        # Trying to maintain humidity around 3.0 kg
+        # Maintaining humidity at 3.0 kg (nominal safe upper bound for 30m³ volume)
         self.dehum_pid = PIDController(kp=0.5, ki=0.01, kd=0.1, setpoint=3.0)
 
         # Simple ON/OFF logic for CO2 scrubber
