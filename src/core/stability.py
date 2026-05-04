@@ -42,8 +42,8 @@ class StabilityMonitor:
     def step(
         self,
         dt_hours: float,
-        state: dict[str, float],
-        deltas: dict[str, float],
+        state: Any,
+        deltas: dict[str, Any],
     ) -> dict[str, Any]:
         """Process a simulation step and return stability metrics."""
 
@@ -58,17 +58,26 @@ class StabilityMonitor:
         deficit_co2 = max(0.0, plant_co2_consumed - crew_co2_produced)
         total_deficit = deficit_o2 + deficit_co2
 
-        c_i = 1.0 - (total_deficit / total_consumption) if total_consumption > 0 else 1.0
+        c_i = (
+            1.0 - (total_deficit / total_consumption) if total_consumption > 0 else 1.0
+        )
         c_i = max(0.0, min(1.0, c_i))
 
         # ── Record point ──
         current_time = (
             self.history[-1]["time_hours"] + dt_hours if self.history else dt_hours
         )
+
+        # Handle both dict and NamedTuple for backward/test compatibility
+        o2_val = (
+            state.o2_percent if hasattr(state, "o2_percent") else state["o2_percent"]
+        )
+        co2_val = state.co2_ppm if hasattr(state, "co2_ppm") else state["co2_ppm"]
+
         current_point: dict[str, float] = {
             "time_hours": current_time,
-            "o2_percent": state["o2_percent"],
-            "co2_ppm": state["co2_ppm"],
+            "o2_percent": o2_val,
+            "co2_ppm": co2_val,
             "c_i": c_i,
         }
 

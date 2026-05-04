@@ -152,7 +152,7 @@ if st.sidebar.button("🚀 Run Simulation", type="primary", use_container_width=
             activity_emojis = {"sleep": "😴", "nominal": "🧑‍💻", "active": "🏃"}
             cols = st.columns(num_crew)
             for i, snap in enumerate(schedule_snapshot):
-                activity = snap["activity"]
+                activity = str(snap["activity"])
                 emoji = activity_emojis.get(activity, "❓")
                 with cols[i]:
                     st.metric(

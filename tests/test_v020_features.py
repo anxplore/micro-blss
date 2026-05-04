@@ -8,7 +8,10 @@ import numpy as np
 import pytest
 
 from src.modules.crops import (
-    CROP_REGISTRY, LETTUCE, WHEAT, get_crop,
+    CROP_REGISTRY,
+    LETTUCE,
+    WHEAT,
+    get_crop,
 )
 from src.modules.crew import ActivitySchedule, CrewCompartment
 from src.modules.plant import PlantHabitat
@@ -37,11 +40,13 @@ class TestCropRegistry:
         """Each crop should produce positive O₂ at nominal conditions."""
         crop = get_crop(crop_name)
         plant = PlantHabitat(crop_area_m2=20.0, light_par=1000.0, crop_params=crop)
-        o2, co2, water, biomass = plant.calculate_mec_rates(
-            current_co2_ppm=1200.0, dap=120.0
+        delta = plant.calculate_mec_rates(current_co2_ppm=1200.0, dap=120.0)
+        o2_net = delta.o2_produced_kg_hr - delta.o2_consumed_kg_hr
+        co2_net = delta.co2_consumed_kg_hr - delta.co2_produced_kg_hr
+        assert o2_net > 0, f"{crop_name}: Net O₂ should be positive, got {o2_net}"
+        assert co2_net > 0, (
+            f"{crop_name}: Net CO₂ consumed should be positive, got {co2_net}"
         )
-        assert o2 > 0, f"{crop_name}: O₂ should be positive, got {o2}"
-        assert co2 > 0, f"{crop_name}: CO₂ consumed should be positive, got {co2}"
 
     @pytest.mark.parametrize("crop_name", list(CROP_REGISTRY.keys()))
     def test_cqy_matrix_shape(self, crop_name: str) -> None:
@@ -88,8 +93,8 @@ class TestCrewScheduling:
     def test_multi_crew_staggered_rates(self) -> None:
         """Two crew with different offsets should produce different rates."""
         schedules = [
-            ActivitySchedule(phase_offset_hours=0.0),   # sleeping at t=0
-            ActivitySchedule(phase_offset_hours=12.0),   # nominal at t=0
+            ActivitySchedule(phase_offset_hours=0.0),  # sleeping at t=0
+            ActivitySchedule(phase_offset_hours=12.0),  # nominal at t=0
         ]
         crew = CrewCompartment(num_crew=2, schedules=schedules)
         crew.sim_time_hours = 0.0
@@ -119,7 +124,7 @@ class TestCrewScheduling:
         """Static mode (no schedules) should still work."""
         crew = CrewCompartment(num_crew=1, activity_level="nominal")
         delta = crew.step(1.0)
-        assert delta["o2_consumed_kg"] > 0
+        assert delta.o2_consumed_kg > 0
 
 
 # ---------------------------------------------------------------------------
@@ -181,7 +186,12 @@ class TestStabilityDiagnostics:
             result = monitor.step(dt, state, deltas)
 
         pp = result["phase_plane"]
-        assert pp["trajectory_type"] in {"stable", "converging", "diverging", "limit_cycle"}
+        assert pp["trajectory_type"] in {
+            "stable",
+            "converging",
+            "diverging",
+            "limit_cycle",
+        }
 
     def test_get_phase_plane_data(self) -> None:
         """Phase-plane data extraction should return matching-length lists."""
@@ -204,6 +214,42 @@ class TestStabilityDiagnostics:
 
 
 # ---------------------------------------------------------------------------
+# Failure Injection (1E)
+# ---------------------------------------------------------------------------
+class TestFailureInjection:
+    """Verify perturbation engine failure modes."""
+
+    def test_cascading_failure_reduces_par(self) -> None:
+        """CASCADING_FAILURE should reduce plant PAR to 100."""
+        from src.core.simulation import Simulation
+
+        sim = Simulation(light_par=1500.0)
+        assert sim.plant.light_par == 1500.0
+
+        sim.inject_failure("CASCADING_FAILURE")
+        assert sim.plant.light_par == 100.0
+
+    def test_cycle_acceleration_shrinks_buffer(self) -> None:
+        """CYCLE_ACCELERATION should reduce buffer volume and scale masses."""
+        from src.core.simulation import Simulation
+
+        sim = Simulation()
+        initial_vol = sim.buffer.volume_m3
+        initial_o2_kg = sim.buffer.mass_o2_kg
+
+        sim.inject_failure("CYCLE_ACCELERATION")
+
+        assert sim.buffer.volume_m3 == 5.0
+        assert sim.buffer.volume_m3 < initial_vol
+        # Mass should be scaled down proportionately to volume (since P, T same)
+        # 5.0 / 30.0 = 1/6
+        assert sim.buffer.mass_o2_kg < initial_o2_kg
+        assert np.isclose(
+            sim.buffer.mass_o2_kg, initial_o2_kg * (5.0 / 30.0), rtol=1e-2
+        )
+
+
+# ---------------------------------------------------------------------------
 # Integration: v0.2.0 simulation with all features
 # ---------------------------------------------------------------------------
 class TestV020Integration:
@@ -217,8 +263,8 @@ class TestV020Integration:
         sim.run(total_hours=48.0, dt_hours=0.5)
 
         state = sim.buffer.get_state()
-        assert state["o2_percent"] > 0
-        assert state["co2_ppm"] >= 0
+        assert state.o2_percent > 0
+        assert state.co2_ppm >= 0
 
     def test_wheat_simulation_runs(self) -> None:
         """Simulation with wheat crop runs without crash."""
@@ -228,4 +274,4 @@ class TestV020Integration:
         sim.run(total_hours=24.0, dt_hours=0.5)
 
         state = sim.buffer.get_state()
-        assert state["o2_percent"] > 0
+        assert state.o2_percent > 0

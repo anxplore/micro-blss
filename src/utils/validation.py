@@ -16,30 +16,19 @@ import logging
 import math
 from dataclasses import dataclass, field
 
+from src.utils.constants import (
+    MW_CO2,
+    MW_O2,
+    MW_C,
+    STOICHIOMETRIC_O2_CO2_RATIO,
+    RQ_WARN_LOW,
+    RQ_WARN_HIGH,
+    RQ_ERROR_LOW,
+    RQ_ERROR_HIGH,
+    MAX_BIOMASS_GAIN_FRACTION,
+)
 
 logger = logging.getLogger("micro_blss.validation")
-
-# ---------------------------------------------------------------------------
-# Molar masses (kg/mol) — single source of truth
-# ---------------------------------------------------------------------------
-MW_CO2 = 44.0e-3  # kg/mol
-MW_O2 = 32.0e-3  # kg/mol
-MW_C = 12.0e-3  # kg/mol
-MW_H2O = 18.0e-3  # kg/mol
-MW_C6H12O6 = 180.0e-3  # kg/mol (glucose)
-
-# Stoichiometric ratio: 6 CO₂ + 6 H₂O → C₆H₁₂O₆ + 6 O₂
-# Therefore mol O₂ produced / mol CO₂ consumed = 1.0 (ideal photosynthesis)
-STOICHIOMETRIC_O2_CO2_RATIO = 1.0
-
-# Respiratory quotient bounds
-RQ_WARN_LOW = 0.7
-RQ_WARN_HIGH = 1.3
-RQ_ERROR_LOW = 0.5
-RQ_ERROR_HIGH = 2.0
-
-# Maximum physiologically plausible single-step biomass gain fraction
-MAX_BIOMASS_GAIN_FRACTION = 0.20  # 20% of current biomass per step
 
 
 @dataclass
@@ -162,12 +151,13 @@ class PhysicalValidator:
         delta_o2_kg: float,
     ) -> tuple[float, bool]:
         """
-        Compute the Respiratory Quotient and check bounds.
+        Compute the Apparent Respiratory Quotient (ARQ) and check bounds.
 
-        RQ = ΔCO₂ / ΔO₂  (in molar terms)
+        ARQ = Net ΔCO₂ / Net ΔO₂ (in molar terms)
 
-        For plant canopy gas exchange the *apparent* RQ of the net flux
-        should stay within [0.7, 1.3] under normal conditions.
+        For plant canopy net gas exchange, the ARQ should stay within
+        [0.7, 1.3] under normal conditions. This is an approximation of
+        the true physiological RQ as it uses net rather than gross rates.
 
         Parameters
         ----------
@@ -314,31 +304,12 @@ class PhysicalValidator:
     ) -> ValidationResult:
         """
         Run all physical constraint checks in a single call.
-
-        Parameters
-        ----------
-        o2_rate_kg_hr : float
-            Net O₂ production rate [kg/hr].
-        co2_rate_kg_hr : float
-            Net CO₂ consumption rate [kg/hr].
-        water_rate_kg_hr : float
-            Water transpiration rate [kg/hr].
-        biomass_rate_kg_hr : float
-            Dry biomass growth rate [kg/hr].
-        current_biomass_kg : float
-            Current total dry biomass [kg].
-        ppfd : float
-            PPFD [µmol/m²/s].
-        bcf : float
-            Biomass Carbon Fraction.
-        dt_hours : float
-            Time step length [hr].
-
-        Returns
-        -------
-        ValidationResult
-            Aggregated result from all checks.
         """
+        # Input validation
+        assert current_biomass_kg >= 0, "Current biomass cannot be negative"
+        assert ppfd >= 0, "PPFD cannot be negative"
+        assert dt_hours > 0, "dt_hours must be positive"
+
         # 1. Hard finiteness check (raises on failure)
         cls.assert_finite(
             o2_rate_kg_hr,

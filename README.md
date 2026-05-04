@@ -36,7 +36,7 @@ This project uses [`uv`](https://github.com/astral-sh/uv) for fast and reproduci
 
 ```bash
 # Clone the repository
-git clone <repository-url>
+git clone https://github.com/anxplore/micro-blss.git
 cd micro-blss
 
 # Install dependencies and create a virtual environment (.venv)
@@ -85,13 +85,13 @@ uv run streamlit run app.py
 
 ## 5. Verification & Validation (V&V)
 
-The project includes a robust test suite (207 tests) focusing on mathematical parity with the original MATLAB V-HAB model, catching any regressions during modifications. The `pytest` framework is utilized.
+The project includes a robust test suite (221 tests) focusing on mathematical parity with the original MATLAB V-HAB model and NASA JPL safety-critical standards. The `pytest` framework is utilized.
 
 ```bash
 # Run the complete test suite
 uv run pytest tests/ -v
 
-# Run with coverage report (must remain >80%)
+# Run with coverage report (must remain >80%, current: 91.5%)
 uv run pytest tests/ --cov=src
 
 # Lint check
