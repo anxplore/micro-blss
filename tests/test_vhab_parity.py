@@ -220,14 +220,12 @@ class TestSimulationIntegration:
 
     def test_dark_phase_produces_no_o2(self, dark_habitat: PlantHabitat) -> None:
         """Plants in darkness should not produce net O₂."""
-        delta = dark_habitat.calculate_mec_rates(
-            current_co2_ppm=1200.0, dap=120.0
-        )
+        delta = dark_habitat.calculate_mec_rates(current_co2_ppm=1200.0, dap=120.0)
         o2_net = delta.o2_produced_kg_hr - delta.o2_consumed_kg_hr
         assert o2_net <= 0.0, f"Expected zero or negative net O₂ in dark, got {o2_net}"
-        assert (
-            delta.biomass_produced_kg_hr == 0.0
-        ), f"Expected zero biomass growth in dark, got {delta.biomass_produced_kg_hr}"
+        assert delta.biomass_produced_kg_hr == 0.0, (
+            f"Expected zero biomass growth in dark, got {delta.biomass_produced_kg_hr}"
+        )
 
     def test_cascading_failure_triggers_instability_warning(
         self, caplog: pytest.LogCaptureFixture

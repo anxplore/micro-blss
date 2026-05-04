@@ -40,11 +40,9 @@ def main() -> None:
             light_par=float(ppfd),
             crop_params=LETTUCE,
         )
-        delta = plant.calculate_mec_rates(
-            current_co2_ppm=float(co2), dap=float(dap_h)
-        )
-        o2_net = delta.o2_produced_kg - delta.o2_consumed_kg
-        co2_net = delta.co2_consumed_kg - delta.co2_produced_kg
+        delta = plant.calculate_mec_rates(current_co2_ppm=float(co2), dap=float(dap_h))
+        o2_net = delta.o2_produced_kg_hr - delta.o2_consumed_kg_hr
+        co2_net = delta.co2_consumed_kg_hr - delta.co2_produced_kg_hr
         rows.append(
             {
                 "CO2_ppm": co2,
@@ -53,8 +51,8 @@ def main() -> None:
                 "crop_area_m2": area,
                 "O2_rate_kg_hr": f"{o2_net:.15e}",
                 "CO2_rate_kg_hr": f"{co2_net:.15e}",
-                "water_rate_kg_hr": f"{delta.water_produced_kg:.15e}",
-                "biomass_rate_kg_hr": f"{delta.biomass_produced_kg:.15e}",
+                "water_rate_kg_hr": f"{delta.water_produced_kg_hr:.15e}",
+                "biomass_rate_kg_hr": f"{delta.biomass_produced_kg_hr:.15e}",
             }
         )
 

@@ -6,7 +6,7 @@ Welcome to the Micro-BLSS (Bioregenerative Life Support System) Simulator projec
 
 **Micro-BLSS** (Micro Bioregenerative Life Support System) is a Python-based Digital Twin of a closed ecological system. It aims to simulate mass balance, plant growth, and metabolic exchange to support human life in high-frequency cycling environments (small habitats) based on MELiSSA (Micro-Ecological Life Support System Alternative). The goal is to transition from simulation to a physical "Home-based Sealed Plant Habitat."
 
-It is also a translation and modernization of the MATLAB-based [V-HAB project](https://github.com/V-HAB/V-HAB). 
+It is also a translation and modernization of the MATLAB-based [V-HAB project](https://github.com/V-HAB/V-HAB).
 
 **Core Architectural Modules (`src/`):**
 - **`modules/crops/`**: Multi-crop parameter library (9 MELiSSA crops) with V-HAB 5×5 polynomial CQY/T_A coefficient matrices.
@@ -35,7 +35,7 @@ We enforce strict, modern Python practices. Your edits must adhere to the follow
   - Prefer `@dataclass(slots=True)` for data structures holding system states to minimize memory overhead during long-duration or multi-node simulations.
   - Define `__slots__` explicitly for core domain classes (like `PlantHabitat`).
   - Use `math.isfinite()` rather than `np.isfinite()` when checking scalar floats in hot paths.
-- **Design Philosophy**: 
+- **Design Philosophy**:
   - Keep code Object-Oriented and strictly modular.
   - Use the virtual sensor abstraction (`get_sensor_reading`) rather than accessing internal variables directly, mimicking future Hardware-In-The-Loop integration.
   - **Fail Safely**: Physiological violations (e.g., impossible biomass growth) should log a `WARNING` via the structured logger instead of raising an exception, ensuring the simulation stays alive for dashboard observation. Non-finite values (NaN/Inf) should trigger a `ValueError`.

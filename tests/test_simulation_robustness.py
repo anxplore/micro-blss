@@ -21,21 +21,21 @@ class TestSimulationRobustness:
 
     def test_history_capacity_bounding(self, caplog: pytest.LogCaptureFixture) -> None:
         """Verify history entries are capped and fail loudly."""
-        # Use a high dt to reach max entries quickly? 
-        # Actually _MAX_HISTORY_ENTRIES is 20000. 
+        # Use a high dt to reach max entries quickly?
+        # Actually _MAX_HISTORY_ENTRIES is 20000.
         # We can monkeypatch it to a smaller value for testing.
         import src.core.simulation as sim_mod
 
         original_max = sim_mod._MAX_HISTORY_ENTRIES
         sim_mod._MAX_HISTORY_ENTRIES = 5
-        
+
         try:
             sim = Simulation()
             with caplog.at_level(logging.WARNING):
                 # Run for 10 steps (5 over limit)
                 for _ in range(10):
                     sim.step(1.0)
-            
+
             assert len(sim.history) == 5
             assert "Simulation history capacity exceeded" in caplog.text
         finally:
@@ -82,6 +82,6 @@ class TestSimulationRobustness:
 
     def test_emergency_safety_counter_break(self) -> None:
         """Verify emergency break in loop (conceptual, hard to trigger)."""
-        # This branch is at count > 1000000. 
+        # This branch is at count > 1000000.
         # For full coverage, we could mock 'steps' but 'steps' is local.
         pass

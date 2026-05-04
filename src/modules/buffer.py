@@ -85,18 +85,18 @@ class BufferReservoir:
         water_liquid_kg: float = 0.0,
     ) -> None:
         # Input validation
-        assert o2_kg >= 0 and math.isfinite(
-            o2_kg
-        ), "o2_kg must be non-negative and finite"
-        assert co2_kg >= 0 and math.isfinite(
-            co2_kg
-        ), "co2_kg must be non-negative and finite"
-        assert water_vapor_kg >= 0 and math.isfinite(
-            water_vapor_kg
-        ), "water_vapor_kg must be non-negative and finite"
-        assert water_liquid_kg >= 0 and math.isfinite(
-            water_liquid_kg
-        ), "water_liquid_kg must be non-negative and finite"
+        assert o2_kg >= 0 and math.isfinite(o2_kg), (
+            "o2_kg must be non-negative and finite"
+        )
+        assert co2_kg >= 0 and math.isfinite(co2_kg), (
+            "co2_kg must be non-negative and finite"
+        )
+        assert water_vapor_kg >= 0 and math.isfinite(water_vapor_kg), (
+            "water_vapor_kg must be non-negative and finite"
+        )
+        assert water_liquid_kg >= 0 and math.isfinite(water_liquid_kg), (
+            "water_liquid_kg must be non-negative and finite"
+        )
 
         self.mass_o2_kg += o2_kg
         self.mass_co2_kg += co2_kg
@@ -111,18 +111,18 @@ class BufferReservoir:
         water_liquid_kg: float = 0.0,
     ) -> None:
         # Input validation
-        assert o2_kg >= 0 and math.isfinite(
-            o2_kg
-        ), "o2_kg must be non-negative and finite"
-        assert co2_kg >= 0 and math.isfinite(
-            co2_kg
-        ), "co2_kg must be non-negative and finite"
-        assert water_vapor_kg >= 0 and math.isfinite(
-            water_vapor_kg
-        ), "water_vapor_kg must be non-negative and finite"
-        assert water_liquid_kg >= 0 and math.isfinite(
-            water_liquid_kg
-        ), "water_liquid_kg must be non-negative and finite"
+        assert o2_kg >= 0 and math.isfinite(o2_kg), (
+            "o2_kg must be non-negative and finite"
+        )
+        assert co2_kg >= 0 and math.isfinite(co2_kg), (
+            "co2_kg must be non-negative and finite"
+        )
+        assert water_vapor_kg >= 0 and math.isfinite(water_vapor_kg), (
+            "water_vapor_kg must be non-negative and finite"
+        )
+        assert water_liquid_kg >= 0 and math.isfinite(water_liquid_kg), (
+            "water_liquid_kg must be non-negative and finite"
+        )
 
         self.mass_o2_kg = max(0.0, self.mass_o2_kg - o2_kg)
         self.mass_co2_kg = max(0.0, self.mass_co2_kg - co2_kg)

@@ -40,13 +40,13 @@ class TestCropRegistry:
         """Each crop should produce positive O₂ at nominal conditions."""
         crop = get_crop(crop_name)
         plant = PlantHabitat(crop_area_m2=20.0, light_par=1000.0, crop_params=crop)
-        delta = plant.calculate_mec_rates(
-            current_co2_ppm=1200.0, dap=120.0
-        )
+        delta = plant.calculate_mec_rates(current_co2_ppm=1200.0, dap=120.0)
         o2_net = delta.o2_produced_kg_hr - delta.o2_consumed_kg_hr
         co2_net = delta.co2_consumed_kg_hr - delta.co2_produced_kg_hr
         assert o2_net > 0, f"{crop_name}: Net O₂ should be positive, got {o2_net}"
-        assert co2_net > 0, f"{crop_name}: Net CO₂ consumed should be positive, got {co2_net}"
+        assert co2_net > 0, (
+            f"{crop_name}: Net CO₂ consumed should be positive, got {co2_net}"
+        )
 
     @pytest.mark.parametrize("crop_name", list(CROP_REGISTRY.keys()))
     def test_cqy_matrix_shape(self, crop_name: str) -> None:

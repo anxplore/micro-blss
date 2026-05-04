@@ -99,9 +99,9 @@ class CrewCompartment:
 
         # Per-crew-member schedules (None = static mode)
         if schedules is not None:
-            assert (
-                len(schedules) == num_crew
-            ), f"Expected {num_crew} schedules, got {len(schedules)}"
+            assert len(schedules) == num_crew, (
+                f"Expected {num_crew} schedules, got {len(schedules)}"
+            )
             self.schedules: list[ActivitySchedule] | None = schedules
         else:
             self.schedules = None
@@ -188,9 +188,9 @@ class CrewCompartment:
         Note: This method updates internal clock (sim_time_hours).
         """
         # Input validation
-        assert dt_hours > 0 and math.isfinite(
-            dt_hours
-        ), "dt_hours must be positive and finite"
+        assert dt_hours > 0 and math.isfinite(dt_hours), (
+            "dt_hours must be positive and finite"
+        )
 
         o2_consumed = self.get_o2_consumption_rate() * dt_hours
         co2_produced = self.get_co2_production_rate() * dt_hours

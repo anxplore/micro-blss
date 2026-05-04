@@ -30,7 +30,9 @@ def dark_habitat() -> PlantHabitat:
 
 
 @pytest.fixture
-def capture_warnings(caplog: pytest.LogCaptureFixture) -> Generator[pytest.LogCaptureFixture, None, None]:
+def capture_warnings(
+    caplog: pytest.LogCaptureFixture,
+) -> Generator[pytest.LogCaptureFixture, None, None]:
     """Capture micro_blss logger output at WARNING level and above."""
     with caplog.at_level(logging.WARNING, logger="micro_blss"):
         yield caplog
