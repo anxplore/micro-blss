@@ -7,8 +7,7 @@ from __future__ import annotations
 
 import logging
 import pytest
-from src.core.simulation import Simulation, _MAX_HISTORY_ENTRIES
-from src.modules.crops import WHEAT
+from src.core.simulation import Simulation
 
 
 class TestSimulationRobustness:
